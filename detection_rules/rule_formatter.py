@@ -104,6 +104,19 @@ class NonformattedField(str):  # noqa: SLOT000
 def preserve_formatting_for_fields(data: OrderedDict[str, Any], fields_to_preserve: list[str]) -> OrderedDict[str, Any]:
     """Preserve formatting for specified nested fields in an action."""
 
+    def preserve_descendant_values(target: Any) -> None:
+        """Preserve any string value fields under query DSL nodes."""
+        if isinstance(target, dict):
+            for key, value in target.items():  # type: ignore[reportUnknownVariableType]
+                if key == "value" and isinstance(value, str):
+                    target[key] = NonformattedField(value)
+                elif isinstance(value, dict | list):
+                    preserve_descendant_values(value)
+
+        if isinstance(target, list):
+            for value in target:  # type: ignore[reportUnknownVariableType]
+                preserve_descendant_values(value)
+
     def apply_preservation(target: OrderedDict[str, Any], keys: list[str]) -> None:
         """Apply NonformattedField preservation based on keys path."""
         for key in keys[:-1]:
@@ -116,6 +129,10 @@ def preserve_formatting_for_fields(data: OrderedDict[str, Any], fields_to_preser
 
         final_key = keys[-1]
         if final_key in target:
+            if final_key == "query":
+                preserve_descendant_values(target[final_key])
+                return
+
             # Apply NonformattedField to the target field if it exists
             target[final_key] = NonformattedField(target[final_key])
 
@@ -244,7 +261,7 @@ def toml_write(rule_contents: dict[str, Any], out_file_path: Path | None = None)
 
             if k == "filters":
                 # explicitly preserve formatting for value field in filters
-                preserved_fields = ["meta.value"]
+                preserved_fields = ["meta.value", "query"]
                 v = [preserve_formatting_for_fields(meta, preserved_fields) for meta in v] if v is not None else []
 
             if k == "note" and isinstance(v, str):
