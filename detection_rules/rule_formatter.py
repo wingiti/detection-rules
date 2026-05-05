@@ -311,7 +311,7 @@ def toml_write(rule_contents: dict[str, Any], out_file_path: Path | None = None)
 
         # we want to preserve the threat_query format, but want to modify it in the context of encoded dump
         if threat_query:
-            formatted_threat_query = "\nthreat_query = '''\n{}\n'''{}".format(threat_query, "\n\n" if bottom else "")
+            formatted_threat_query = "\nthreat_query = '''{}'''{}".format(threat_query, "\n\n" if bottom else "")
             top_out = top_out.replace('threat_query = "XXxXX"', formatted_threat_query)
 
         # we want to preserve the query format, but want to modify it in the context of encoded dump
