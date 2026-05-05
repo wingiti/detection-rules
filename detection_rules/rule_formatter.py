@@ -316,7 +316,8 @@ def toml_write(rule_contents: dict[str, Any], out_file_path: Path | None = None)
 
         # we want to preserve the query format, but want to modify it in the context of encoded dump
         if query:
-            formatted_query = "\nquery = '''\n{}\n'''{}".format(query, "\n\n" if bottom else "")
+            #formatted_query = "\nquery = '''\n{}\n'''{}".format(query, "\n\n" if bottom else "")
+            formatted_query = "\nquery = '''{}'''{}".format(query, "\n\n" if bottom else "")
             top_out = top_out.replace('query = "XXxXX"', formatted_query)
 
         if f:
